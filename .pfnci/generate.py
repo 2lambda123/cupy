@@ -550,13 +550,13 @@ def main(argv: List[str]) -> int:
 
     log(f'Loading schema: {options.schema}', options.verbose)
     with open(options.schema) as f:
-        schema = yaml.load(f, Loader=yaml.Loader)
+        schema = yaml.load(f, Loader=yaml.SafeLoader)
     validate_schema(schema)
 
     log(f'Loading project matrixes: {options.matrix}', options.verbose)
     matrixes = []
     with open(options.matrix) as f:
-        for matrix_record in yaml.load(f, Loader=yaml.Loader):
+        for matrix_record in yaml.load(f, Loader=yaml.SafeLoader):
             matrixes.append(Matrix(matrix_record))
     expand_inherited_matrixes(matrixes)
     validate_matrixes(schema, matrixes)
