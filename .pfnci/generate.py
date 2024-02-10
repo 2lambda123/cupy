@@ -16,6 +16,8 @@ SchemaType = Mapping[str, Any]
 
 class Matrix:
     def __init__(self, record: Mapping[str, Any]):
+        """"""
+
         self._rec = {
             '_inherits': None,
             '_extern': False,
@@ -25,30 +27,71 @@ class Matrix:
     def env(self) -> Dict[str, Any]:
         envvars = {}
         for k, v in self._rec.items():
-            if not k.startswith('env:') or v is None:
+        """"""
+
+           if not k.startswith('env:') or v is None:
                 continue
             envvars[k.split(':', 2)[1]] = v
         return envvars
 
     def __getattr__(self, key: str) -> Any:
+        """"""
+
         if key in self._rec:
             return self._rec[key]
         raise AttributeError(f'"{key}" not defined in matrix {self._rec}')
 
     def copy(self) -> 'Matrix':
+        """"""
+
         return Matrix(self._rec.copy())
 
     def update(self, matrix: 'Matrix') -> None:
+        """Updates the matrix with the values from another matrix.
+        Parameters:
+            - matrix (Matrix): The matrix to update with.
+        Returns:
+            - None: The function does not return anything.
+        Processing Logic:
+            - Updates matrix with values from another.
+            - Uses self._rec and matrix._rec.
+            - _rec is a dictionary.
+            - _rec is a dictionary."""
+
         self._rec.update(matrix._rec)
 
 
 class LinuxGenerator:
     def __init__(self, schema: SchemaType, matrix: Matrix):
+        """"Initializes a new instance of the class with the given schema and matrix.
+        Parameters:
+            - schema (SchemaType): The schema to be used for the matrix.
+            - matrix (Matrix): The matrix to be used for the instance.
+        Returns:
+            - None: This function does not return any value.
+        Processing Logic:
+            - Asserts that the matrix system is 'linux'.
+            - Sets the schema and matrix attributes for the instance.""""
+
         assert matrix.system == 'linux'
         self.schema = schema
         self.matrix = matrix
 
     def generate_dockerfile(self) -> str:
+        """Function:
+        def generate_dockerfile(self) -> str:
+            Generates a Dockerfile based on the provided matrix parameters.
+            Parameters:
+                - self (object): The current object.
+            Returns:
+                - str: The generated Dockerfile as a string.
+            Processing Logic:
+                - Generates a base image based on the provided matrix parameters.
+                - Installs necessary tools and libraries.
+                - Sets environment variables for ROCm.
+                - Sets up Python and its libraries.
+                - Uninstalls any unnecessary libraries."""
+
         matrix = self.matrix
         lines = [
             '# AUTO GENERATED: DO NOT EDIT!',
@@ -201,6 +244,18 @@ class LinuxGenerator:
         return '\n'.join(lines)
 
     def _additional_packages(self, kind: str) -> List[str]:
+        """('Unexpected code path')
+        This function returns a list of additional packages required for a given kind of installation (apt or yum) based on the specified matrix parameters.
+        Parameters:
+            - kind (str): Specifies the kind of installation (apt or yum).
+        Returns:
+            - List[str]: A list of additional packages required for the specified kind of installation.
+        Processing Logic:
+            - Checks if the specified kind is either 'apt' or 'yum'.
+            - If the specified matrix has a cuda parameter, it checks for additional packages related to nccl, cutensor, cusparselt, and cudnn.
+            - If the specified matrix has a rocm parameter, it returns the list of packages specified in the schema.
+            - If the specified matrix has neither a cuda nor a rocm parameter, it raises an AssertionError."""
+
         assert kind in ('apt', 'yum')
         matrix = self.matrix
         if matrix.cuda is not None:
@@ -259,6 +314,19 @@ class LinuxGenerator:
         raise AssertionError
 
     def generate_script(self) -> str:
+        """Function:
+        def generate_script(self) -> str:
+            Generates a bash script for running tests based on the provided matrix.
+            Parameters:
+                - matrix (Matrix): A matrix object containing information about the desired test configuration.
+            Returns:
+                - str: A bash script for running tests based on the provided matrix.
+            Processing Logic:
+                - Generates a list of lines for the bash script.
+                - Adds environment variables to the list based on the matrix object.
+                - Adds commands for building, testing, and cleaning up to the list.
+                - Joins the list into a single string and returns it."""
+
         matrix = self.matrix
         lines = [
             '#!/bin/bash',
@@ -326,10 +394,33 @@ class LinuxGenerator:
 
 class CoverageGenerator:
     def __init__(self, schema: SchemaType, matrixes: List[Matrix]):
+        """Initializes the object with the provided schema and list of matrixes.
+        Parameters:
+            - schema (SchemaType): The schema to be used for the matrixes.
+            - matrixes (List[Matrix]): A list of matrixes to be used for processing.
+        Returns:
+            - None: This function does not return anything.
+        Processing Logic:
+            - Initialize object with schema and matrixes.
+            - Assign schema to self.schema.
+            - Assign matrixes to self.matrixes.
+            - No additional processing is done."""
+
         self.schema = schema
         self.matrixes = matrixes
 
     def generate_rst(self) -> Tuple[str, List[str]]:
+        """Generate_rst:
+            Generates a matrix table for CuPy CI test coverage.
+        Parameters:
+            - self (object): The object that the function is called on.
+        Returns:
+            - Tuple[str, List[str]]: A tuple containing a string of reST output and a list of coverage warnings.
+        Processing Logic:
+            - Generates a matrix table.
+            - Adds links to FlexCI projects.
+            - Renders the matrix table as reST."""
+
         # Generate a matrix table.
         table = [
             ['Param', '', '#', 'Test'] + [''] * (len(self.matrixes) - 1),
@@ -400,9 +491,41 @@ class CoverageGenerator:
 
 class TagGenerator:
     def __init__(self, matrixes: List[Matrix]):
+        """Initializes the object with a list of matrixes.
+        Parameters:
+            - matrixes (List[Matrix]): A list of matrixes to be stored in the object.
+        Returns:
+            - None: This function does not return anything.
+        Processing Logic:
+            - Initializes the object with a list of matrixes.
+            - Stores the list of matrixes in the object.
+            - No additional processing logic is applied.
+            - This function does not modify the input parameters."""
+
         self.matrixes = matrixes
 
     def generate(self) -> str:
+        """Function: Generate a JSON string containing project tags from a list of matrixes.
+        Parameters:
+            - self (type): An instance of the class.
+        Returns:
+            - str: A JSON string containing project tags.
+        Processing Logic:
+            - Loop through each matrix in the list.
+            - Check if the matrix has tags.
+            - Add the project and tags to the output dictionary.
+            - Convert the output dictionary to a JSON string.
+        Example:
+            matrix1 = Matrix("Project A", ["tag1", "tag2"])
+            matrix2 = Matrix("Project B", ["tag3", "tag4"])
+            matrixes = [matrix1, matrix2]
+            output = generate(matrixes)
+            print(output)
+            # Output: {
+            #     "Project A": ["tag1", "tag2"],
+            #     "Project B": ["tag3", "tag4"]
+            # }"""
+
         output = {}
         for matrix in self.matrixes:
             if matrix.tags is not None:
@@ -413,6 +536,17 @@ class TagGenerator:
 def validate_schema(schema: SchemaType) -> None:
     # Validate schema consistency
     for key, key_schema in schema.items():
+        """This function validates the consistency of a given schema and raises a ValueError if any inconsistencies are found.
+        Parameters:
+            - schema (SchemaType): A dictionary representing the schema to be validated.
+        Returns:
+            - None: This function does not return anything.
+        Processing Logic:
+            - Validates the consistency of the given schema.
+            - Raises a ValueError if any inconsistencies are found.
+            - Checks for missing or unknown values for certain keys in the schema.
+            - Only checks for specific keys and values, not the entire schema."""
+
         if key == 'os':
             for value, value_schema in key_schema.items():
                 system = value_schema.get('system', None)
@@ -446,6 +580,17 @@ def validate_schema(schema: SchemaType) -> None:
 
 
 def validate_matrixes(schema: SchemaType, matrixes: List[Matrix]) -> None:
+    """Validate matrixes for consistency and raise ValueError if inconsistencies are found.
+    Parameters:
+        - schema (SchemaType): A dictionary of dictionaries containing possible values for each key.
+        - matrixes (List[Matrix]): A list of Matrix objects to be validated.
+    Returns:
+        - None: This function does not return anything, it only raises ValueError if inconsistencies are found.
+    Processing Logic:
+        - Check for overall consistency.
+        - Check for consistency for each matrix.
+        - Raise ValueError if inconsistencies are found."""
+
     # Validate overall consistency
     project_seen = set()
     system_target_seen = set()
@@ -512,6 +657,20 @@ def validate_matrixes(schema: SchemaType, matrixes: List[Matrix]) -> None:
 
 
 def expand_inherited_matrixes(matrixes: List[Matrix]) -> None:
+    """Expands inherited matrixes with parent's values.
+    Parameters:
+        - matrixes (List[Matrix]): List of Matrix objects to be expanded.
+    Returns:
+        - None: This function does not return anything.
+    Processing Logic:
+        - Create a dictionary mapping project names to Matrix objects.
+        - Loop through each Matrix object in the list.
+        - If the Matrix object does not inherit from another Matrix, skip it.
+        - Otherwise, find the parent Matrix object using the dictionary.
+        - Make a copy of the parent Matrix object.
+        - Update the copy with the values from the current Matrix object.
+        - Update the current Matrix object with the values from the copy."""
+
     prj2mat = {m.project: m for m in matrixes}
     for matrix in matrixes:
         if matrix._inherits is None:
@@ -525,11 +684,31 @@ def expand_inherited_matrixes(matrixes: List[Matrix]) -> None:
 
 
 def log(msg: str, visible: bool = True) -> None:
+    """Prints a message if visible is True.
+    Parameters:
+        - msg (str): The message to be printed.
+        - visible (bool): Determines if the message should be printed or not. Defaults to True.
+    Returns:
+        - None: Does not return anything.
+    Processing Logic:
+        - Prints message if visible is True."""
+
     if visible:
         print(msg)
 
 
 def parse_args(argv: List[str]) -> Any:
+    """Function parses arguments from command line and returns the parsed arguments.
+    Parameters:
+        - argv (List[str]): List of command line arguments.
+    Returns:
+        - Any: Parsed arguments.
+    Processing Logic:
+        - Parses arguments from command line.
+        - Sets default values for optional arguments.
+        - Returns parsed arguments.
+        - Arguments are parsed using argparse library."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--schema', type=str, default=None)
     parser.add_argument('-m', '--matrix', type=str, default=None)
@@ -540,6 +719,23 @@ def parse_args(argv: List[str]) -> Any:
 
 
 def main(argv: List[str]) -> int:
+    """Generates test assets, coverage matrix, and tags based on project matrixes.
+    Parameters:
+        - argv (List[str]): List of command line arguments.
+    Returns:
+        - int: Return code indicating success or failure.
+    Processing Logic:
+        - Parse command line arguments.
+        - Load schema and project matrixes.
+        - Generate test assets for each project matrix.
+        - Generate coverage matrix.
+        - Generate tags.
+        - Write output files to specified directory or current directory.
+        - Return success or failure code.
+    Example:
+        >>> main(['--schema', 'schema.yaml', '--matrix', 'matrix.yaml'])
+        0"""
+
     options = parse_args(argv)
 
     basedir = os.path.abspath(os.path.dirname(argv[0]))
