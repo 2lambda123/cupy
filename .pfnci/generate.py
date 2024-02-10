@@ -17,7 +17,7 @@ SchemaType = Mapping[str, Any]
 class Matrix:
     def __init__(self, record: Mapping[str, Any]):
         """"""
-        
+
         self._rec = {
             '_inherits': None,
             '_extern': False,
@@ -28,22 +28,22 @@ class Matrix:
         envvars = {}
         for k, v in self._rec.items():
         """"""
-        
-            if not k.startswith('env:') or v is None:
+
+           if not k.startswith('env:') or v is None:
                 continue
             envvars[k.split(':', 2)[1]] = v
         return envvars
 
     def __getattr__(self, key: str) -> Any:
         """"""
-        
+
         if key in self._rec:
             return self._rec[key]
         raise AttributeError(f'"{key}" not defined in matrix {self._rec}')
 
     def copy(self) -> 'Matrix':
         """"""
-        
+
         return Matrix(self._rec.copy())
 
     def update(self, matrix: 'Matrix') -> None:
@@ -57,7 +57,7 @@ class Matrix:
             - Uses self._rec and matrix._rec.
             - _rec is a dictionary.
             - _rec is a dictionary."""
-        
+
         self._rec.update(matrix._rec)
 
 
@@ -72,7 +72,7 @@ class LinuxGenerator:
         Processing Logic:
             - Asserts that the matrix system is 'linux'.
             - Sets the schema and matrix attributes for the instance.""""
-        
+
         assert matrix.system == 'linux'
         self.schema = schema
         self.matrix = matrix
@@ -91,7 +91,7 @@ class LinuxGenerator:
                 - Sets environment variables for ROCm.
                 - Sets up Python and its libraries.
                 - Uninstalls any unnecessary libraries."""
-        
+
         matrix = self.matrix
         lines = [
             '# AUTO GENERATED: DO NOT EDIT!',
@@ -255,7 +255,7 @@ class LinuxGenerator:
             - If the specified matrix has a cuda parameter, it checks for additional packages related to nccl, cutensor, cusparselt, and cudnn.
             - If the specified matrix has a rocm parameter, it returns the list of packages specified in the schema.
             - If the specified matrix has neither a cuda nor a rocm parameter, it raises an AssertionError."""
-        
+
         assert kind in ('apt', 'yum')
         matrix = self.matrix
         if matrix.cuda is not None:
@@ -326,7 +326,7 @@ class LinuxGenerator:
                 - Adds environment variables to the list based on the matrix object.
                 - Adds commands for building, testing, and cleaning up to the list.
                 - Joins the list into a single string and returns it."""
-        
+
         matrix = self.matrix
         lines = [
             '#!/bin/bash',
@@ -405,7 +405,7 @@ class CoverageGenerator:
             - Assign schema to self.schema.
             - Assign matrixes to self.matrixes.
             - No additional processing is done."""
-        
+
         self.schema = schema
         self.matrixes = matrixes
 
@@ -420,7 +420,7 @@ class CoverageGenerator:
             - Generates a matrix table.
             - Adds links to FlexCI projects.
             - Renders the matrix table as reST."""
-        
+
         # Generate a matrix table.
         table = [
             ['Param', '', '#', 'Test'] + [''] * (len(self.matrixes) - 1),
@@ -501,7 +501,7 @@ class TagGenerator:
             - Stores the list of matrixes in the object.
             - No additional processing logic is applied.
             - This function does not modify the input parameters."""
-        
+
         self.matrixes = matrixes
 
     def generate(self) -> str:
@@ -525,7 +525,7 @@ class TagGenerator:
             #     "Project A": ["tag1", "tag2"],
             #     "Project B": ["tag3", "tag4"]
             # }"""
-        
+
         output = {}
         for matrix in self.matrixes:
             if matrix.tags is not None:
@@ -546,7 +546,7 @@ def validate_schema(schema: SchemaType) -> None:
             - Raises a ValueError if any inconsistencies are found.
             - Checks for missing or unknown values for certain keys in the schema.
             - Only checks for specific keys and values, not the entire schema."""
-        
+
         if key == 'os':
             for value, value_schema in key_schema.items():
                 system = value_schema.get('system', None)
@@ -590,7 +590,7 @@ def validate_matrixes(schema: SchemaType, matrixes: List[Matrix]) -> None:
         - Check for overall consistency.
         - Check for consistency for each matrix.
         - Raise ValueError if inconsistencies are found."""
-    
+
     # Validate overall consistency
     project_seen = set()
     system_target_seen = set()
@@ -670,7 +670,7 @@ def expand_inherited_matrixes(matrixes: List[Matrix]) -> None:
         - Make a copy of the parent Matrix object.
         - Update the copy with the values from the current Matrix object.
         - Update the current Matrix object with the values from the copy."""
-    
+
     prj2mat = {m.project: m for m in matrixes}
     for matrix in matrixes:
         if matrix._inherits is None:
@@ -692,7 +692,7 @@ def log(msg: str, visible: bool = True) -> None:
         - None: Does not return anything.
     Processing Logic:
         - Prints message if visible is True."""
-    
+
     if visible:
         print(msg)
 
@@ -708,7 +708,7 @@ def parse_args(argv: List[str]) -> Any:
         - Sets default values for optional arguments.
         - Returns parsed arguments.
         - Arguments are parsed using argparse library."""
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--schema', type=str, default=None)
     parser.add_argument('-m', '--matrix', type=str, default=None)
@@ -735,7 +735,7 @@ def main(argv: List[str]) -> int:
     Example:
         >>> main(['--schema', 'schema.yaml', '--matrix', 'matrix.yaml'])
         0"""
-    
+
     options = parse_args(argv)
 
     basedir = os.path.abspath(os.path.dirname(argv[0]))
